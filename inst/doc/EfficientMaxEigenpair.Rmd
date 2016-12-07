@@ -9,8 +9,8 @@ date: '`r Sys.Date()`'
 output:
   pdf_document:
     highlight: kate
-vignette: |
-  %\VignetteIndexEntry{An Introduction to EfficientMaxEigenpair}
+vignette: >
+  %\VignetteIndexEntry{EfficientMaxEigenpair Vignette} 
   %\VignetteEngine{knitr::knitr}
   %\VignetteEncoding{UTF-8}
 ---
@@ -20,7 +20,6 @@ vignette: |
 \url{http://math0.bnu.edu.cn/~chenmf/}
 \end{center}
 Let us install and require the package `EfficientMaxEigenpair` first.
-<<<<<<< HEAD
 ```{r, eval = TRUE, echo = FALSE}
 source("../R/eff.ini.maxeig.general.R")
 source("../R/eff.ini.maxeig.tri.R")
@@ -34,12 +33,6 @@ source("../R/tridiag.R")
 require(EfficientMaxEigenpair)
 ```
 
-=======
-```{r, eval = FALSE, echo = TRUE}
-require(EfficientMaxEigenpair)
-```
-
->>>>>>> ed1b4ff345716c847dcbed78d2138fc59e9deef3
 Before moving to the details, let us illustrate the algorithm by two typical examples.
 
 #### The tridiagonal case (Example 7 in [Chen (2016)](http://math0.bnu.edu.cn/~chenmf/))
@@ -440,5 +433,4 @@ Q = matrix(c(-57, 135/59, 243/91, 351/287, 118/27, -52, 590/91, 118/41,
     4, 4)
 eff.ini.seceig.general(Q, z0 = "Auto", digit.thresh = 4)$z
 eff.ini.seceig.general(Q, z0 = "fixed", digit.thresh = 4)$z
-
 ```
