@@ -85,7 +85,7 @@ text(96, 0.0010, labels = "v[2]", col = "red")
 In the following, because of the space limitation, we do not report the eigenvector results and write -$z$ instead of $z$ for simplicity.
 ```{r, eval = TRUE, echo=TRUE, results='hold', tidy=TRUE}
 # Define the dimension of each matrix.
-nn = c(100, 500, 1000, 5000, 7500, 10^4)
+nn = c(100, 500, 1000, 5000)
 
 zmat = matrix(0, length(nn), 4)
 zmat[ ,1] = nn
