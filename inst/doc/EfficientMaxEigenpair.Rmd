@@ -330,7 +330,7 @@ eff.ini.maxeig.general(A, v0_tilde = rep(1, dim(A)[1]), z0 = "numeric",
 The improved algorithm is presented at the end of Section 4 in [Chen (2016)](http://math0.bnu.edu.cn/~chenmf/). The outputs at the last line in Examples 18 and 19 are different from those presented in the cited paper, due to the reason that
 a slight different combination was used there.
 
-#####Example 18 (Same as Example 10)
+##### Example 18 (Same as Example 10)
 ```{r, echo=TRUE, results='hold', tidy=TRUE}
 A = matrix(c(1, 1, 3, 2, 2, 2, 3, 1, 1), 3, 3)
 eff.ini.maxeig.general(A, z0 = "Auto", digit.thresh = 5)$z

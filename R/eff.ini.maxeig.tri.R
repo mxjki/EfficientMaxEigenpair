@@ -80,7 +80,7 @@ eff.ini.maxeig.tri = function(a, b, c, xi = 1, improved = F, digit.thresh = 6) {
 
         h[1] = 1
         h[2:(N + 1)] = cumprod(r)
-        h[N + 2] = c[N + 1] * h[N + 1] + a[N] * (h[N] - h[N + 1])
+        h[N + 2] = c[N + 1] * h[N + 1] + a[N] * (h[N + 1] - h[N])
 
         b[N + 1] = 1
         phi = rev(cumsum(rev(1/(h[1:(N + 1)] * h[2:(N + 2)] * mu *
