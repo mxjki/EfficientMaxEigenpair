@@ -18,9 +18,10 @@ it should between 0 and 1.}
 \item{digit.thresh}{The precise level of output results.}
 }
 \value{
-A list of eigenpair object are returned, with components \eqn{z} and \eqn{v}.
+A list of eigenpair object are returned, with components \eqn{z}, \eqn{v} and \eqn{iter}.
 \item{z}{The approximating sequence of the maximal eigenvalue.}
 \item{v}{The approximating sequence of the corresponding eigenvector.}
+\item{iter}{The number of iterations.}
 }
 \description{
 Calculate the next to maximal eigenpair for the tridiagonal matrix
@@ -40,4 +41,3 @@ eff.ini.seceig.tri(a, b, xi = 2/5)
 \seealso{
 \code{\link{eff.ini.seceig.general}} for the general conservative matrix next to the maximal eigenpair.
 }
-

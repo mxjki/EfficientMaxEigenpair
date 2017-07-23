@@ -12,10 +12,11 @@
 #'        eigenpairs is used.
 #' @param digit.thresh The precise level of output results.
 #'
-#' @return A list of eigenpair object are returned, with components \eqn{z} and \eqn{v}.
+#' @return A list of eigenpair object are returned, with components \eqn{z}, \eqn{v} and \eqn{iter}.
 #' \item{z}{The approximating sequence of the maximal eigenvalue.}
 #' \item{v}{The approximating sequence of the corresponding eigenvector.}
-#'
+#' \item{iter}{The number of iterations.}
+#' 
 #' @seealso \code{\link{eff.ini.maxeig.general}} for the general matrix maximal eigenpair.
 #'
 #' @examples
@@ -59,11 +60,11 @@ eff.ini.maxeig.tri = function(a, b, c, xi = 1, improved = F, digit.thresh = 6) {
     r = rep(NA, N)
     h = rep(NA, N + 2)
 
-    if (sum(c[1:N]) == 0) {
+    if (sum(c[1:N]!=0) == 0) {
 
         b[N + 1] = c[N + 1]
 
-        phi = rev(cumsum(rev(1/(mu * b))))
+        #phi = rev(cumsum(rev(1/(mu * b))))
 
         r = rep(1, N)
 
@@ -83,32 +84,62 @@ eff.ini.maxeig.tri = function(a, b, c, xi = 1, improved = F, digit.thresh = 6) {
         h[N + 2] = c[N + 1] * h[N + 1] + a[N] * (h[N + 1] - h[N])
 
         b[N + 1] = 1
-        phi = rev(cumsum(rev(1/(h[1:(N + 1)] * h[2:(N + 2)] * mu *
-            b))))
+        #phi = rev(cumsum(rev(1/(h[1:(N + 1)] * h[2:(N + 2)] * mu *
+        #    b))))
     }
+    
+    Q_tilde = diag(1/h[1:(N+1)], N+1) %*% Q %*% diag(h[1:(N+1)], N+1)
+    mu_tilde = h[1:(N+1)]^2 * mu
+    b_tilde = c(Q_tilde[cbind(1:N,2:(N+1))], -Q_tilde[N+1,N+1]-Q_tilde[N+1,N])
+    phi_tilde = rev(cumsum(rev(1/(mu_tilde * b_tilde))))
+    
+    #deltapart1 = mu * h[-(N + 2)]^2 * sqrt(phi)
+    #deltapart1sum = cumsum(deltapart1)
+    #deltapart2 = mu * h[-(N + 2)]^2 * phi^(3/2)
+    #deltapart2sum = rev(cumsum(rev(deltapart2)))
 
-    deltapart1 = mu * h[-(N + 2)]^2 * sqrt(phi)
+    #delta1 = max(c(sqrt(phi[1:N]) * deltapart1sum[1:N] + 1/sqrt(phi[1:N]) *
+    #    deltapart2sum[2:(N + 1)], sqrt(phi[N + 1]) * deltapart1sum[N +
+    #    1]))
+
+    deltapart1 = mu_tilde * sqrt(phi_tilde)
     deltapart1sum = cumsum(deltapart1)
-    deltapart2 = mu * h[-(N + 2)]^2 * phi^(3/2)
+    deltapart2 = mu_tilde * phi_tilde^(3/2)
     deltapart2sum = rev(cumsum(rev(deltapart2)))
-
-    delta1 = max(c(sqrt(phi[1:N]) * deltapart1sum[1:N] + 1/sqrt(phi[1:N]) *
-        deltapart2sum[2:(N + 1)], sqrt(phi[N + 1]) * deltapart1sum[N +
-        1]))
-
-    v0_tilde = h[-(N + 2)] * sqrt(phi)
+    
+    delta1 = max(c(sqrt(phi_tilde[1:N]) * deltapart1sum[1:N] + 1/sqrt(phi_tilde[1:N]) *
+                     deltapart2sum[2:(N + 1)], sqrt(phi_tilde[N + 1]) * deltapart1sum[N +
+                                                                                  1]))
+    
+    #v0_tilde = h[-(N + 2)] * sqrt(phi)
+    
+    v0_tilde = sqrt(phi_tilde)
+    
+    # if (improved) {
+    #     v0 = v0_tilde/sqrt(sum(v0_tilde^2 * mu))
+    #     zstart = xi * 1/delta1 + (1 - xi) * sum(v0 * (-Q %*% v0) *
+    #         mu)
+    #     ray = ray.quot(Q = Q, mu = mu, v0_tilde = v0_tilde, zstart = zstart,
+    #         digit.thresh = digit.thresh)
+    # } else {
+    #     v0 = v0_tilde/sqrt(sum(v0_tilde^2))
+    #     zstart = xi * 1/delta1 + (1 - xi) * sum(v0 * (-Q %*% v0))
+    #     ray = ray.quot(Q = Q, mu = rep(1, (N + 1)), v0_tilde = v0_tilde,
+    #         zstart = zstart, digit.thresh = digit.thresh)
+    # }
+    
     if (improved) {
-        v0 = v0_tilde/sqrt(sum(v0_tilde^2 * mu))
-        zstart = xi * 1/delta1 + (1 - xi) * sum(v0 * (-Q %*% v0) *
-            mu)
-        ray = ray.quot(Q = Q, mu = mu, v0_tilde = v0_tilde, zstart = zstart,
-            digit.thresh = digit.thresh)
+      v0 = v0_tilde/sqrt(sum(v0_tilde^2 * mu_tilde))
+      zstart = xi * 1/delta1 + (1 - xi) * sum(v0 * (-Q_tilde %*% v0) *
+                                                mu_tilde)
+      ray = ray.quot(Q = Q_tilde, mu = mu_tilde, v0_tilde = v0_tilde, zstart = zstart,
+                     digit.thresh = digit.thresh)
     } else {
-        v0 = v0_tilde/sqrt(sum(v0_tilde^2))
-        zstart = xi * 1/delta1 + (1 - xi) * sum(v0 * (-Q %*% v0))
-        ray = ray.quot(Q = Q, mu = rep(1, (N + 1)), v0_tilde = v0_tilde,
-            zstart = zstart, digit.thresh = digit.thresh)
+      v0 = v0_tilde/sqrt(sum(v0_tilde^2))
+      zstart = xi * 1/delta1 + (1 - xi) * sum(v0 * (-Q_tilde %*% v0))
+      ray = ray.quot(Q = Q_tilde, mu = rep(1, (N + 1)), v0_tilde = v0_tilde,
+                     zstart = zstart, digit.thresh = digit.thresh)
     }
-
-    return(list(z = round(m - unlist(ray$z), digit.thresh), v = ray$v))
+    
+    return(list(z = round(m - unlist(ray$z), digit.thresh), v = ray$v, iter = ray$iter))
 }

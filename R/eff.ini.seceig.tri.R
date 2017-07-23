@@ -10,9 +10,10 @@
 #'        it should between 0 and 1.
 #' @param digit.thresh The precise level of output results.
 #'
-#' @return A list of eigenpair object are returned, with components \eqn{z} and \eqn{v}.
+#' @return A list of eigenpair object are returned, with components \eqn{z}, \eqn{v} and \eqn{iter}.
 #' \item{z}{The approximating sequence of the maximal eigenvalue.}
 #' \item{v}{The approximating sequence of the corresponding eigenvector.}
+#' \item{iter}{The number of iterations.}
 #'
 #' @note The sums of each row of the input tridiagonal matrix should be 0.
 #'
@@ -62,5 +63,5 @@ eff.ini.seceig.tri = function(a, b, xi = 1, digit.thresh = 6) {
     ray = ray.quot(Q = Q, mu = mu, v0_tilde = v0_bar, zstart = zstart,
         digit.thresh = digit.thresh)
 
-    return(list(z = unlist(ray$z), v = ray$v))
+    return(list(z = unlist(ray$z), v = ray$v, iter = ray$iter))
 }

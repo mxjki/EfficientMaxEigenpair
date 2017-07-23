@@ -15,10 +15,11 @@
 #'        \eqn{(v_0,-Q*v_0)_\mu}, it should between 0 and 1.
 #' @param digit.thresh The precise level of output results.
 #'
-#' @return A list of eigenpair object are returned, with components \eqn{z} and \eqn{v}.
+#' @return A list of eigenpair object are returned, with components \eqn{z}, \eqn{v} and \eqn{iter}.
 #' \item{z}{The approximating sequence of the maximal eigenvalue.}
 #' \item{v}{The approximating sequence of the corresponding eigenvector.}
-#'
+#' \item{iter}{The number of iterations.}
+#' 
 #' @seealso \code{\link{eff.ini.maxeig.tri}} for the tridiagonal matrix maximal eigenpair.
 
 #' @examples A = matrix(c(1, 1, 3, 2, 2, 2, 3, 1, 1), 3, 3)
@@ -119,5 +120,5 @@ eff.ini.maxeig.general = function(A, v0_tilde = NULL, z0 = NULL,
             zstart = zstart, digit.thresh = digit.thresh)
     }
 
-    return(list(z = m - unlist(ray$z), v = ray$v))
+    return(list(z = m - unlist(ray$z), v = ray$v, iter = ray$iter))
 }

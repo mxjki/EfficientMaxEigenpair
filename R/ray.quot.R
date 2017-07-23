@@ -7,9 +7,10 @@
 #' @param v0_tilde The unnormalized initial vector \eqn{\tilde{v0}}.
 #' @param zstart The initial \eqn{z_0} as an approximation of \eqn{\rho(Q)}.
 #' @param digit.thresh The precise level of output results.
-#' @return A list of eigenpair object are returned, with components '\eqn{z}' and '\eqn{v}'.
+#' @return A list of eigenpair object are returned, with components \eqn{z}, \eqn{v} and \eqn{iter}.
 #' \item{z}{The approximating sequence of the maximal eigenvalue.}
 #' \item{v}{The approximating sequence of the corresponding eigenvector.}
+#' \item{iter}{The number of iterations.}
 #'
 #' @examples
 #' Q = matrix(c(1, 1, 3, 2, 2, 2, 3, 1, 1), 3, 3)
@@ -48,7 +49,9 @@ ray.quot = function(Q, mu, v0_tilde, zstart, digit.thresh = 6) {
     if (ratio == 0) {
         v = v[-(iter + 1)]
         rz = rz[-(iter + 1)]
+        
+        iter = iter - 1
     }
 
-    return(list(v = v, z = rz))
+    return(list(v = v, z = rz, iter = iter))
 }

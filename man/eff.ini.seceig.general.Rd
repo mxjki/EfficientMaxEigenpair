@@ -18,9 +18,10 @@ of \eqn{z_0} in paper.}
 \item{digit.thresh}{The precise level of output results.}
 }
 \value{
-A list of eigenpair object are returned, with components \eqn{z} and \eqn{v}.
+A list of eigenpair object are returned, with components \eqn{z}, \eqn{v} and \eqn{iter}.
 \item{z}{The approximating sequence of the maximal eigenvalue.}
 \item{v}{The approximating sequence of the corresponding eigenvector.}
+\item{iter}{The number of iterations.}
 }
 \description{
 Calculate the next to maximal eigenpair for the general conservative matrix.
@@ -38,4 +39,3 @@ eff.ini.seceig.general(Q, z0 = 'fixed', digit.thresh = 5)
 \seealso{
 \code{\link{eff.ini.seceig.tri}} for the tridiagonal matrix next to the maximal eigenpair.
 }
-

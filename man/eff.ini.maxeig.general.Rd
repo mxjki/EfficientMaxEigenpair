@@ -28,9 +28,10 @@ eigenpairs is used.}
 \item{digit.thresh}{The precise level of output results.}
 }
 \value{
-A list of eigenpair object are returned, with components \eqn{z} and \eqn{v}.
+A list of eigenpair object are returned, with components \eqn{z}, \eqn{v} and \eqn{iter}.
 \item{z}{The approximating sequence of the maximal eigenvalue.}
 \item{v}{The approximating sequence of the corresponding eigenvector.}
+\item{iter}{The number of iterations.}
 }
 \description{
 Calculate the maximal eigenpair for the general matrix.
@@ -60,4 +61,3 @@ z0numeric = 28 - z0ini)
 \seealso{
 \code{\link{eff.ini.maxeig.tri}} for the tridiagonal matrix maximal eigenpair.
 }
-

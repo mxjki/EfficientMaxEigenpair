@@ -17,10 +17,11 @@ getzstart = function(Q, mu, x, r, N) {
 #' @param c1 A large constant.
 #' @param digit.thresh The precise level of output results.
 #'
-#' @return A list of eigenpair object are returned, with components \eqn{z} and \eqn{v}.
+#' @return A list of eigenpair object are returned, with components \eqn{z}, \eqn{v} and \eqn{iter}.
 #' \item{z}{The approximating sequence of the maximal eigenvalue.}
 #' \item{v}{The approximating sequence of the corresponding eigenvector.}
-#'
+#' \item{iter}{The number of iterations.}
+#' 
 #' @note The conservativity of matrix \eqn{Q=(q_{ij})} means that the sums of each row of
 #' matrix \eqn{Q} are all 0.
 #'
@@ -73,5 +74,5 @@ eff.ini.seceig.general = function(Q, z0 = NULL, c1 = 1000, digit.thresh = 6) {
     ray = ray.quot(Q = Q, mu = mu, v0_tilde = v0_bar, zstart = zstart,
         digit.thresh = digit.thresh)
 
-    return(list(z = unlist(ray$z), v = ray$v))
+    return(list(z = unlist(ray$z), v = ray$v, iter = ray$iter))
 }

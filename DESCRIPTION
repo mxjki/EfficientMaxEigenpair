@@ -1,8 +1,8 @@
 Package: EfficientMaxEigenpair
 Type: Package
 Title: Efficient Initials for Computing the Maximal Eigenpair
-Version: 0.1.1
-Date: 2017-06-14
+Version: 0.1.2
+Date: 2017-07-23
 Author: Mu-Fa Chen <mfchen@bnu.edu.cn>
 Maintainer: Xiao-Jun Mao <maoxj.ki@gmail.com>
 Description: An implementation for using efficient initials to compute the
@@ -17,7 +17,7 @@ Depends:
     R (>= 3.3.2),
     stats
 Encoding: UTF-8
-RoxygenNote: 5.0.1
+RoxygenNote: 6.0.1
 Suggests: knitr,
     rmarkdown
 VignetteBuilder: knitr

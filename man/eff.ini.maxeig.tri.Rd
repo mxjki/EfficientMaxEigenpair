@@ -24,9 +24,10 @@ eigenpairs is used.}
 \item{digit.thresh}{The precise level of output results.}
 }
 \value{
-A list of eigenpair object are returned, with components \eqn{z} and \eqn{v}.
+A list of eigenpair object are returned, with components \eqn{z}, \eqn{v} and \eqn{iter}.
 \item{z}{The approximating sequence of the maximal eigenvalue.}
 \item{v}{The approximating sequence of the corresponding eigenvector.}
+\item{iter}{The number of iterations.}
 }
 \description{
 Calculate the maximal eigenpair for the tridiagonal matrix.
@@ -42,4 +43,3 @@ eff.ini.maxeig.tri(a, b, c, xi = 1)
 \seealso{
 \code{\link{eff.ini.maxeig.general}} for the general matrix maximal eigenpair.
 }
-
