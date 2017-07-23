@@ -435,11 +435,3 @@ Q = matrix(c(-57, 135/59, 243/91, 351/287, 118/27, -52, 590/91, 118/41,
 eff.ini.seceig.general(Q, z0 = "Auto", digit.thresh = 4)$z
 eff.ini.seceig.general(Q, z0 = "fixed", digit.thresh = 4)$z
 ```
-
-# References
-```{r generateBibliography, echo=FALSE, eval=TRUE, message=FALSE, warning=FALSE}
-require("knitcitations")
-cleanbib()
-options("citation_format" = "pandoc")
-read.bibtex(file = "efficient.bib")
-```
