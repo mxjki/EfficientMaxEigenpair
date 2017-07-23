@@ -1,3 +1,8 @@
+<!--
+  %\VignetteIndexEntry{EfficientMaxEigenpair Vignette} 
+  %\VignetteEngine{knitr::knitr}
+  %\VignetteEncoding{UTF-8}
+-->
 ---
 title: "EfficientMaxEigenpair Vignette"
 header-includes:
@@ -6,14 +11,9 @@ author:
 - Mu-Fa Chen
 - Assisted by Xiao-Jun Mao
 date: '`r Sys.Date()`'
-bibliography: efficient.bib
 output:
   pdf_document:
     highlight: kate
-vignette: >
-  %\VignetteIndexEntry{EfficientMaxEigenpair Vignette} 
-  %\VignetteEngine{knitr::knitr}
-  %\VignetteEncoding{UTF-8}
 ---
 
 `EfficientMaxEigenpair` is a package for computing the maximal eigenpair of the matrices with non-negative off-diagonal elements (or as a dual, the minimal eigenvalue of the matrices with non-positive off-diagonal elements). This vignette is a simple guide to using the package. All the algorithms and examples provided in this vignette are available in the paper "Efficient initials for computing maximal eigenpair" by Mu-Fa Chen. The paper [Chen (2016)](http://math0.bnu.edu.cn/~chenmf/) is now included in the Vol 4, in the middle of the website:
@@ -141,7 +141,10 @@ Having illustrated the examples, we now introduce the package in details. It off
 * `eff.ini.maxeig.tri()`: Calculate the maximal eigenpair for the tridiagonal matrix. The coefficient `xi` is used in the improved initial $z_0$ to form the convex combination of $1/\delta_1$ and $(v_0,Av_0)_\mu$ (in the dual case $(v_0,-Av_0)_\mu$), it should between 0 and 1. The inner product $(,)_\mu$ here is in the space $L^{2}(\mu)$. The option `improved = F` indicates whether the improved algorithm to find the efficient initials are considered. Usually the option `improved = T` is used when the coefficient `xi` does not equal to 1. The choice `xi=1` is very safe but less effective. When `xi` is a little away from 1, the algorithm becomes more effective. However, when `xi` is closed to 0, the algorithm becomes less effective again and is even dangerous. The "best" choice of `xi` depends on the model. For different models, one may choose different `xi`. In the present tridiagonal case, we suggest a common choice `xi=7/8` (See Example 7 above/below).
     * The precise level used for output results is set to be `digit.thresh = 6` which implies       1e-6 without any special requirement. Same for the following three algorithms and the         examples shown in this vignette.
     * This algorithm works not only for tridiagonal matrix, but also for diagonally dominant matrices. In the latter case, one simply picks up the diagonal part from the original one, as illustrated by the last part of Example 17 in the paper [Chen (2016)](http://math0.bnu.edu.cn/~chenmf/). The improved algorithm below Example 10 in the cited paper is recommended.
-
+    * Note:
+        * `eff.ini.maxeig.tri()` has been modified and is simplified based on the recent papers. 
+        * The construction of the sequences $a_{j}$ and $b_{j}$ in solving the linear equation is not trivial. This is especially meaningful when going to the large scale matrices.
+   
 * `eff.ini.maxeig.general()`: Calculate the maximal eigenpair for the general matrix with non-negative off-diagonal elements. Let the general matrix $A=(a_{ij}:i,j\in E)$.
     * The initial vector $v_0$ is given by the option `v0_tilde`, if `v0_tilde=NULL`, the one computed in Section 4.2 in the paper [Chen (2016)](http://math0.bnu.edu.cn/~chenmf/) is used. Typically, we use two different initial vectors $v_0$, the uniformly distributed one (Section 4.1) and the one computed in Section 4.2, below (10). The first one is safer but less effective and we encourage to use the second one.
     * There are three choices of the initial $z_0$ as the approximation of $\rho(A)$ which is the maximal eigenvalue of the general matrix $A$. The option `z_0="fixed"` corresponding to the choice I, i.e, set $z_0=\sup_{i\in E}A_{i}$, where $A_{i}=\sum_{j\in E}a_{ij}$. The option `z_0="Auto"` corresponding to the choice II, i.e, set $z_0=v_0^{\ast}Av_{0}$. This simpler choice is used in the other ($z_k:k\ge 1$), but it may be dangerous as initial $z_0$ as illustrated by Example 20 above/below. The option `z_0="numeric"` corresponding to the choice III, as mentioned in the first algorithm for diagonally dominant matrices.
@@ -434,12 +437,4 @@ Q = matrix(c(-57, 135/59, 243/91, 351/287, 118/27, -52, 590/91, 118/41,
     4, 4)
 eff.ini.seceig.general(Q, z0 = "Auto", digit.thresh = 4)$z
 eff.ini.seceig.general(Q, z0 = "fixed", digit.thresh = 4)$z
-```
-
-# References
-```{r generateBibliography, echo=FALSE, eval=TRUE, message=FALSE, warning=FALSE}
-require("knitcitations")
-cleanbib()
-options("citation_format" = "pandoc")
-read.bibtex(file = "efficient.bib")
 ```
