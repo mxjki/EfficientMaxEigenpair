@@ -12,7 +12,7 @@
 <meta name="author" content="Mu-Fa Chen" />
 <meta name="author" content="Assisted by Xiao-Jun Mao" />
 
-<meta name="date" content="2017-08-01" />
+<meta name="date" content="2017-08-02" />
 
 <title>EfficientMaxEigenpair Vignette</title>
 
@@ -121,7 +121,7 @@ $(document).ready(function () {
 <h1 class="title toc-ignore">EfficientMaxEigenpair Vignette</h1>
 <h4 class="author"><em>Mu-Fa Chen</em></h4>
 <h4 class="author"><em>Assisted by Xiao-Jun Mao</em></h4>
-<h4 class="date"><em>2017-08-01</em></h4>
+<h4 class="date"><em>2017-08-02</em></h4>
 
 </div>
 
@@ -223,8 +223,8 @@ eff.ini.maxeig.general(A, improved = T, xi = 0.65, digit.thresh = 4)$z</code></p
 <li>This algorithm works not only for tridiagonal matrix, but also for diagonally dominant matrices. In the latter case, one simply picks up the diagonal part from the original one, as illustrated by the last part of Example 17 in the paper <a href="http://math0.bnu.edu.cn/~chenmf/">Chen (2016)</a>. The improved algorithm below Example 10 in the cited paper is recommended.</li>
 <li>Note:
 <ul>
-<li><code>eff.ini.maxeig.tri()</code> has been modified and is simplified based on the recent papers.</li>
-<li>The construction of the sequences <span class="math inline">\(a_{j}\)</span> and <span class="math inline">\(b_{j}\)</span> in solving the linear equation is not trivial. This is especially meaningful when going to the large scale matrices.</li>
+<li><code>eff.ini.maxeig.tri()</code> has been modified and is simplified based on several papers completed in 2017.</li>
+<li>The construction of the sequences <span class="math inline">\(A_{j}\)</span> and <span class="math inline">\(B_{j}\)</span> in solving the linear equation is not trivial. This is especially meaningful when going to the large scale matrices.</li>
 </ul></li>
 </ul></li>
 <li><code>eff.ini.maxeig.general()</code>: Calculate the maximal eigenpair for the general matrix with non-negative off-diagonal elements. Let the general matrix <span class="math inline">\(A=(a_{ij}:i,j\in E)\)</span>.

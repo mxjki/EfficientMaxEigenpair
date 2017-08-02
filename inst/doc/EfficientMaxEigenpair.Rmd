@@ -140,8 +140,8 @@ Having illustrated the examples, we now introduce the package in details. It off
     * The precise level used for output results is set to be `digit.thresh = 6` which implies       1e-6 without any special requirement. Same for the following three algorithms and the         examples shown in this vignette.
     * This algorithm works not only for tridiagonal matrix, but also for diagonally dominant matrices. In the latter case, one simply picks up the diagonal part from the original one, as illustrated by the last part of Example 17 in the paper [Chen (2016)](http://math0.bnu.edu.cn/~chenmf/). The improved algorithm below Example 10 in the cited paper is recommended.
     * Note:
-        * `eff.ini.maxeig.tri()` has been modified and is simplified based on the recent papers. 
-        * The construction of the sequences $a_{j}$ and $b_{j}$ in solving the linear equation is not trivial. This is especially meaningful when going to the large scale matrices.
+        * `eff.ini.maxeig.tri()` has been modified and is simplified based on several papers completed in 2017. 
+        * The construction of the sequences $A_{j}$ and $B_{j}$ in solving the linear equation is not trivial. This is especially meaningful when going to the large scale matrices.
    
 * `eff.ini.maxeig.general()`: Calculate the maximal eigenpair for the general matrix with non-negative off-diagonal elements. Let the general matrix $A=(a_{ij}:i,j\in E)$.
     * The initial vector $v_0$ is given by the option `v0_tilde`, if `v0_tilde=NULL`, the one computed in Section 4.2 in the paper [Chen (2016)](http://math0.bnu.edu.cn/~chenmf/) is used. Typically, we use two different initial vectors $v_0$, the uniformly distributed one (Section 4.1) and the one computed in Section 4.2, below (10). The first one is safer but less effective and we encourage to use the second one.
