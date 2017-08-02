@@ -20,7 +20,7 @@ it should between 0 and 1.}
 \value{
 A list of eigenpair object are returned, with components \eqn{z}, \eqn{v} and \eqn{iter}.
 \item{z}{The approximating sequence of the maximal eigenvalue.}
-\item{v}{The approximating sequence of the corresponding eigenvector.}
+\item{v}{The approximating eigenfunction of the corresponding eigenvector.}
 \item{iter}{The number of iterations.}
 }
 \description{

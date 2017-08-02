@@ -4,8 +4,8 @@
 \alias{eff.ini.maxeig.general}
 \title{General matrix maximal eigenpair}
 \usage{
-eff.ini.maxeig.general(A, v0_tilde = NULL, z0 = NULL, z0numeric,
-  improved = F, xi = 1, digit.thresh = 6)
+eff.ini.maxeig.general(A, v0_tilde = NULL, z0 = NULL, z0numeric, xi = 1,
+  digit.thresh = 6)
 }
 \arguments{
 \item{A}{The input general matrix.}
@@ -19,9 +19,6 @@ of \eqn{z_0} in paper.}
 \item{z0numeric}{The numerical value assigned to initial \eqn{z_0} as an approximation of
 \eqn{\rho(Q)} when z_0='numeric'.}
 
-\item{improved}{With improved=T, the improved algorithm to calculate initial approximating
-eigenpairs is used.}
-
 \item{xi}{The coefficient used to form the convex combination of \eqn{\delta_1^{-1}} and
 \eqn{(v_0,-Q*v_0)_\mu}, it should between 0 and 1.}
 
@@ -30,7 +27,7 @@ eigenpairs is used.}
 \value{
 A list of eigenpair object are returned, with components \eqn{z}, \eqn{v} and \eqn{iter}.
 \item{z}{The approximating sequence of the maximal eigenvalue.}
-\item{v}{The approximating sequence of the corresponding eigenvector.}
+\item{v}{The approximating eigenfunction of the corresponding eigenvector.}
 \item{iter}{The number of iterations.}
 }
 \description{
@@ -54,10 +51,13 @@ c[1] = -diag(S)[1] - b[1]
 c[2:(N - 1)] = -diag(S)[2:(N - 1)] - b[2:(N - 1)] - a[1:(N - 2)]
 c[N] = -diag(S)[N] - a[N - 1]
 
-z0ini = eff.ini.maxeig.tri(a, b, c, xi = 7/8, improved = TRUE)$z[1]
+z0ini = eff.ini.maxeig.tri(a, b, c, xi = 7/8)$z[1]
 eff.ini.maxeig.general(A, v0_tilde = rep(1, dim(A)[1]), z0 = 'numeric',
 z0numeric = 28 - z0ini)
 }
 \seealso{
-\code{\link{eff.ini.maxeig.tri}} for the tridiagonal matrix maximal eigenpair.
+\code{\link{eff.ini.maxeig.tri}} for the tridiagonal matrix maximal 
+eigenpair by rayleigh quotient iteration algorithm.
+\code{\link{eff.ini.maxeig.shift.inv.tri}} for the tridiagonal matrix 
+maximal eigenpair by shifted inverse iteration algorithm.
 }

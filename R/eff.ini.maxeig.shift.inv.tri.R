@@ -1,6 +1,6 @@
 #' @title Tridiagonal matrix maximal eigenpair
-#' @description Calculate the maximal eigenpair for the tridiagonal matrix by
-#' rayleigh quotient iteration algorithm.
+#' @description Calculate the maximal eigenpair for the tridiagonal matrix by 
+#' shifted inverse iteration algorithm.
 #'
 #' @param a The lower diagonal vector.
 #' @param b The upper diagonal vector.
@@ -16,8 +16,8 @@
 #' \item{v}{The approximating eigenfunction of the corresponding eigenvector.}
 #' \item{iter}{The number of iterations.}
 #' 
-#' @seealso \code{\link{eff.ini.maxeig.shift.inv.tri}} for the tridiagonal matrix 
-#' maximal eigenpair by shifted inverse iteration algorithm.
+#' @seealso \code{\link{eff.ini.maxeig.tri}} for the tridiagonal matrix maximal 
+#' eigenpair by rayleigh quotient iteration algorithm.
 #' \code{\link{eff.ini.maxeig.general}} for the general matrix maximal eigenpair.
 #'
 #' @examples
@@ -25,10 +25,10 @@
 #' b = c(1:7)^2
 #' c = rep(0, length(a) + 1)
 #' c[length(a) + 1] = 8^2
-#' eff.ini.maxeig.tri(a, b, c, xi = 1)
+#' eff.ini.maxeig.shift.inv.tri(a, b, c, xi = 1)
 
 #' @export
-eff.ini.maxeig.tri = function(a, b, c, xi = 1, digit.thresh = 6) {
+eff.ini.maxeig.shift.inv.tri = function(a, b, c, xi = 1, digit.thresh = 6) {
     N = length(a)
     Q = tridiag(b, a, -c(b[1] + c[1], a[1:N - 1] + b[2:N] + c[2:N], a[N] + c[N + 
         1]))
@@ -115,12 +115,12 @@ eff.ini.maxeig.tri = function(a, b, c, xi = 1, digit.thresh = 6) {
     if (sum(b[1:N] != a) != 0) {
         v0 = v0_tilde/sqrt(sum(v0_tilde^2 * mu_tilde))
         zstart = xi * 1/delta1 + (1 - xi) * sum(v0 * (-Q_tilde %*% v0) * mu_tilde)
-        ray = ray.quot.tri(Q = Q_tilde, mu = mu_tilde, v0_tilde = v0_tilde, zstart = zstart, 
+        ray = shift.inv.tri(Q = Q_tilde, mu = mu_tilde, v0_tilde = v0_tilde, zstart = zstart, 
             digit.thresh = digit.thresh)
     } else {
         v0 = v0_tilde/sqrt(sum(v0_tilde^2))
         zstart = xi * 1/delta1 + (1 - xi) * sum(v0 * (-Q_tilde %*% v0))
-        ray = ray.quot.tri(Q = Q_tilde, mu = rep(1, (N + 1)), v0_tilde = v0_tilde, 
+        ray = shift.inv.tri(Q = Q_tilde, mu = rep(1, (N + 1)), v0_tilde = v0_tilde, 
             zstart = zstart, digit.thresh = digit.thresh)
     }
     

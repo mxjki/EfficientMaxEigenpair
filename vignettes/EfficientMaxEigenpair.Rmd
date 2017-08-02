@@ -1,3 +1,8 @@
+---
+output:
+  pdf_document: default
+  html_document: default
+---
 <!--
   %\VignetteIndexEntry{EfficientMaxEigenpair Vignette} 
   %\VignetteEngine{knitr::knitr}
@@ -14,7 +19,7 @@ date: '`r Sys.Date()`'
 output: html_document
 ---
 
-`EfficientMaxEigenpair` is a package for computing the maximal eigenpair of the matrices with non-negative off-diagonal elements (or as a dual, the minimal eigenvalue of the matrices with non-positive off-diagonal elements). This vignette is a simple guide to using the package. All the algorithms and examples provided in this vignette are available in the paper "Efficient initials for computing maximal eigenpair" by Mu-Fa Chen. The paper [Chen (2016)](http://math0.bnu.edu.cn/~chenmf/) is now included in the Vol 4, in the middle of the website:
+`EfficientMaxEigenpair` is a package for computing the maximal eigenpair of the matrices with non-negative off-diagonal elements (or as a dual, the minimal eigenvalue of the matrices with non-positive off-diagonal elements). This vignette is a simple guide to using the package. All the algorithms and examples provided in this vignette are available in both the paper "Efficient initials for computing maximal eigenpair" and "Global algorithms for maximal eigenpair" by Mu-Fa Chen. The papers [Chen (2016)](http://math0.bnu.edu.cn/~chenmf/) and [Chen (2017)](http://math0.bnu.edu.cn/~chenmf/) are now included in the Vol 4, in the middle of the website:
 \begin{center}
 \url{http://math0.bnu.edu.cn/~chenmf/}
 \end{center}
@@ -22,9 +27,16 @@ Let us install and require the package `EfficientMaxEigenpair` first.
 ```{r, eval = TRUE, echo = FALSE}
 source("../R/eff.ini.maxeig.general.R")
 source("../R/eff.ini.maxeig.tri.R")
+source("../R/eff.ini.maxeig.shift.inv.tri.R")
 source("../R/eff.ini.seceig.general.R")
 source("../R/eff.ini.seceig.tri.R")
-source("../R/ray.quot.R")
+source("../R/ray.quot.tri.R")
+source("../R/ray.quot.seceig.tri.R")
+source("../R/ray.quot.general.R")
+source("../R/ray.quot.seceig.general.R")
+source("../R/shift.inv.tri.R")
+source("../R/tri.sol.R")
+source("../R/find_deltak.R")
 source("../R/tridiag.R")
 ```
 
@@ -52,7 +64,7 @@ c = rep(0, length(a) + 1)
 c[length(a) + 1] = nn^2
 
 # Output the corresponding convergence maximal eigenpairs of the tridiagonal matrix.
-eigenpair=eff.ini.maxeig.tri(a, b, c, xi = 7/8, improved = T)
+eigenpair=eff.ini.maxeig.tri(a, b, c, xi = 7/8)
 ```
 
 The output here are the approximations $z$ of the maximal eigenvalue of matrix $Q$. However, in what follow, we often write -$z$ instead of $z$ for simplicity.
@@ -61,10 +73,11 @@ The output here are the approximations $z$ of the maximal eigenvalue of matrix $
 eigenpair$z
 ```
 
-The following figure shows the corresponding eigenvetors $v$ up to a sign. To be consistent with the paper's notation, we accept the convention that the first element in vector start with $v[0]$. From the first figure below, one sees that the eigenvectors $-v[1]$ and $v[2]$ are nearly the same. However, if we look at the last parts of the curves, it is clear that $-v[1]$ and $v[2]$ are actually different.
-```{r, echo=FALSE, results='hold', tidy=TRUE}
-# The approximating sequence v[0], v[1], v[2](up to a sign) of the maximal eigenvector.
-# Here we plot them in the same figure to compare.
+The following figure shows the corresponding eigenvetors $v$ up to a sign. To be consistent with the paper's notation, we accept the convention that the first element in vector start with $v[0]$. From the first figure below, one sees that the eigenvectors $-v[1]$ and $v[2]$ are nearly the same. However, if we look at the last parts of the curves, it is clear that $-v[1]$ and $v[2]$ are actually different. Here we plot them in the same figure to compare. The following two figures show the approximating sequence $v[0]$, $v[1]$, $v[2]$(up to a sign) of the maximal eigenvector.
+
+![$v[0]$, $v[1]$, $v[2]$](v012.pdf){width=280px} ![$v[1]$, $v[2]$](v12.pdf){width=280px}
+
+```{r, eval = FALSE, echo=FALSE, results='hold', tidy=TRUE}
 plot(eigenpair$v[[1]], type = "l", col = "black", ylab = "", xlab = "")
 lines(-eigenpair$v[[2]], col = "blue")
 lines(eigenpair$v[[3]], col = "red")
@@ -72,8 +85,7 @@ text(50, 0.5, labels = "v[0], -v[1], v[2] on {1,2,...,100}")
 text(90, 0.05, labels = "v[0]", col = "black")
 text(20, 0.05, labels = "-v[1] and v[2]", col = "black")
 ```
-
-```{r, echo=FALSE, results='hold', tidy=TRUE}
+```{r, eval = FALSE, echo=FALSE, results='hold', tidy=TRUE}
 plot(x = c(91:100), -eigenpair$v[[2]][91:100], type = "l", col = "blue", ylab = "", xlab = "")
 lines(x = c(91:100), eigenpair$v[[3]][91:100], col = "red")
 text(95.5, 0.0018, labels = "-v[1], v[2] on {91,92,...,100}")
@@ -98,7 +110,7 @@ for (i in 1:length(nn)) {
 
     # Output the corresponding dual case results, i.e,
     # the minimal eigenvalue of the tridiagonal matrix -Q with non-posivie off-diagonal elements.
-    zmat[i, -1] = -eff.ini.maxeig.tri(a, b, c, xi = 7/8, improved = T)$z[1:3]
+    zmat[i, -1] = -eff.ini.maxeig.tri(a, b, c, xi = 7/8)$z[1:3]
 }
 
 colnames(zmat) = c("Dimension", "-z_0", "-z_1", "-z_2")
@@ -130,38 +142,45 @@ eff.ini.maxeig.general(A, z0 = "Auto", digit.thresh = 4)$z
 Here we fixed the problem by using improved algorithm and safer initials which will be illustrated in detail of the algorithm part.
 ```{r, echo=TRUE, results='hold', tidy=TRUE}
 # Calulate the approximating sequence of maximal eigenvalue by the Rayleigh quotient iteration.
-eff.ini.maxeig.general(A, improved = T, xi = 0.65, digit.thresh = 4)$z
+eff.ini.maxeig.general(A, xi = 0.65, digit.thresh = 4)$z
 ```
 
 
 Having illustrated the examples, we now introduce the package in details. It offers four main algorithms:
 
-* `eff.ini.maxeig.tri()`: Calculate the maximal eigenpair for the tridiagonal matrix. The coefficient `xi` is used in the improved initial $z_0$ to form the convex combination of $1/\delta_1$ and $(v_0,Av_0)_\mu$ (in the dual case $(v_0,-Av_0)_\mu$), it should between 0 and 1. The inner product $(,)_\mu$ here is in the space $L^{2}(\mu)$. The option `improved = F` indicates whether the improved algorithm to find the efficient initials are considered. Usually the option `improved = T` is used when the coefficient `xi` does not equal to 1. The choice `xi=1` is very safe but less effective. When `xi` is a little away from 1, the algorithm becomes more effective. However, when `xi` is closed to 0, the algorithm becomes less effective again and is even dangerous. The "best" choice of `xi` depends on the model. For different models, one may choose different `xi`. In the present tridiagonal case, we suggest a common choice `xi=7/8` (See Example 7 above/below).
-    * The precise level used for output results is set to be `digit.thresh = 6` which implies       1e-6 without any special requirement. Same for the following three algorithms and the         examples shown in this vignette.
+* `eff.ini.maxeig.tri()`: calculate the maximal eigenpair for the tridiagonal matrix. The coefficient `xi` is used to form the convex combination of $1/\delta_1$ and $(v_0,Av_0)_\mu$ (in the dual case $(v_0,-Av_0)_\mu$), it should between 0 and 1. The inner product $(,)_\mu$ here is in the space $L^{2}(\mu)$.  The choice `xi=1` is very safe but less effective. When `xi` is a little away from 1, the algorithm becomes more effective. However, when `xi` is closed to 0, the algorithm becomes less effective again and is even dangerous. The "best" choice of `xi` depends on the model. For different models, one may choose different `xi`. In the present tridiagonal case, we suggest a common choice `xi=7/8` (See Example 7 above/below).
+    * The precise level used for output results is set to be `digit.thresh = 6` which implies 1e-6 without any special requirement. Same for the following three algorithms and the examples shown in this vignette.
     * This algorithm works not only for tridiagonal matrix, but also for diagonally dominant matrices. In the latter case, one simply picks up the diagonal part from the original one, as illustrated by the last part of Example 17 in the paper [Chen (2016)](http://math0.bnu.edu.cn/~chenmf/). The improved algorithm below Example 10 in the cited paper is recommended.
-    * Note:
-        * `eff.ini.maxeig.tri()` has been modified and is simplified based on several papers completed in 2017. 
-        * The construction of the sequences $A_{j}$ and $B_{j}$ in solving the linear equation is not trivial. This is especially meaningful when going to the large scale matrices.
+  
+* `eff.ini.maxeig.shift.inv.tri()`: 
+    * `eff.ini.maxeig.shift.inv.tri()` is a safe improvement of `eff.ini.maxeig.tri()`. It is simplified based on Section A.4 in [Chen (2017)](http://math0.bnu.edu.cn/~chenmf/). 
+    * The construction of the sequences $A_{j}$ and $B_{j}$ in solving the linear equation is not trivial. This is especially meaningful when going to the large scale matrices.
    
-* `eff.ini.maxeig.general()`: Calculate the maximal eigenpair for the general matrix with non-negative off-diagonal elements. Let the general matrix $A=(a_{ij}:i,j\in E)$.
+* `eff.ini.maxeig.general()`: calculate the maximal eigenpair for the general matrix with non-negative off-diagonal elements. Let the general matrix $A=(a_{ij}:i,j\in E)$.
     * The initial vector $v_0$ is given by the option `v0_tilde`, if `v0_tilde=NULL`, the one computed in Section 4.2 in the paper [Chen (2016)](http://math0.bnu.edu.cn/~chenmf/) is used. Typically, we use two different initial vectors $v_0$, the uniformly distributed one (Section 4.1) and the one computed in Section 4.2, below (10). The first one is safer but less effective and we encourage to use the second one.
     * There are three choices of the initial $z_0$ as the approximation of $\rho(A)$ which is the maximal eigenvalue of the general matrix $A$. The option `z_0="fixed"` corresponding to the choice I, i.e, set $z_0=\sup_{i\in E}A_{i}$, where $A_{i}=\sum_{j\in E}a_{ij}$. The option `z_0="Auto"` corresponding to the choice II, i.e, set $z_0=v_0^{\ast}Av_{0}$. This simpler choice is used in the other ($z_k:k\ge 1$), but it may be dangerous as initial $z_0$ as illustrated by Example 20 above/below. The option `z_0="numeric"` corresponding to the choice III, as mentioned in the first algorithm for diagonally dominant matrices.
     * The option `z0numeric` is only used when the initial $z_0$ is considered based on (11) in the paper [Chen (2016)](http://math0.bnu.edu.cn/~chenmf/).
-    * Similarly, there are other options `improved`, `xi` and `digit.thresh` which are the same as defined in function `eff.ini.maxeig.tri()`. The improved algorithm is recommended. However, here we should choose a smaller `xi`, say 1/3 or 0.65 used in Examples 18-20 below.
+    * Similarly, there are other options `xi` and `digit.thresh` which are the same as defined in function `eff.ini.maxeig.tri()`. The improved algorithm is recommended. However, here we should choose a smaller `xi`, say 1/3 or 0.65 used in Examples 18-20 below.
 
-* `eff.ini.secondeig.tri()`: Calculate the next to maximal eigenpair for the tridiagonal matrix. As mentioned in the cited paper, for simplicity, here we assume that the sums of each row of the input tridiagonal matrix should be 0, i.e, $A_{i}=0$ for all $i\in E$. Similarly, there are other options `xi` and `digit.thresh` which are the same as defined in function `eff.ini.maxeig.tri()`.
+* `eff.ini.secondeig.tri()`: calculate the next to maximal eigenpair for the tridiagonal matrix. As mentioned in the cited paper, for simplicity, here we assume that the sums of each row of the input tridiagonal matrix should be 0, i.e, $A_{i}=0$ for all $i\in E$. Similarly, there are other options `xi` and `digit.thresh` which are the same as defined in function `eff.ini.maxeig.tri()`.
 
-* `eff.ini.secondeig.general()`: Calculate the next to maximal eigenpair for the general conservative matrix where the conservativity of matrix means that the sums of each row are all 0, i.e, $A_{i}=0$ for all $i\in E$.
+* `eff.ini.secondeig.general()`: calculate the next to maximal eigenpair for the general conservative matrix where the conservativity of matrix means that the sums of each row are all 0, i.e, $A_{i}=0$ for all $i\in E$.
     * There are two choices of the initial $z_0$ as the approximation of $\lambda_1(A)$ which is the second largest eigenvalue of the general matrix $A$. The option `z_0="fixed"` corresponding to the approximation to be $z_0\approx\lambda_0(A_1)$, where $A_1$ is an auxiliary matrix $A$-matrix given in below. The option `z_0="Auto"` corresponding to the approximation given in Section 6 in the paper [Chen (2016)](http://math0.bnu.edu.cn/~chenmf/). It may be necessary to use `z_0="fixed"`, especially for large matrices.
     * A large constant $c_1$ is provided to replace the last diagonal element $A[N,N]$ to generate the auxiliary matrix $A$-matrix $A_1$. Similarly, there is an option `digit.thresh` which is the same as defined in function `eff.ini.maxeig.tri()`.
 
 There are two auxiliary functions `tridia()` and `ray.quot()` where:
 
-- `tridiag()`: Generate tridiagonal matrix $A$ based on three input vectors.
-- `ray.quot()`: Rayleigh quotient iteration algorithm for computing the maximal eigenpair of matrix $A$.
+- `tridiag()`: generate tridiagonal matrix $A$ based on three input vectors.
+- `ray.quot.tri()`: rayleigh quotient iteration algorithm for computing the maximal eigenpair of tridigonal matrix $Q$.
+- `shift.inv.tri()`: shifted inverse iteration algorithm using $\delta_k$ for computing the maximal eigenpair of tridigonal matrix $Q$.
+- `ray.quot.seceig.tri()`: rayleigh quotient iteration algorithm for computing the next to maximal eigenpair of tridigonal matrix $Q$.
+- `ray.quot.general()`: rayleigh quotient iteration algorithm for computing the maximal eigenpair of general matrix $A$.
+- `ray.quot.seceig.general()`: rayleigh quotient iteration algorithm for computing the next to maximal eigenpair of general matrix $A$.
+- `tri.sol()`: solve the linear equation (-$Q$-$z$*$I$)$w$=$v$.
+- `delta()`: compute $\delta_k$ for given vector $v$ and matrix $Q$ based on Section A.4 in [Chen (2017)](http://math0.bnu.edu.cn/~chenmf/). 
 
 ## Acknowledgement
-The research project is supported in part by the National Natural Science Foundation of China (No. 11131003), the ``985'' project from the Ministry of Education in China, and the Project Funded by the Priority Academic Program Development of Jiangsu Higher Education Institutions. The first author acknowledges the assisted one for his hard work in preparing this package in R.
+The research project is supported in part by the National Natural Science Foundation of China (No. 11131003, 11626245, 11771046) and the Project Funded by the Priority Academic Program Development of Jiangsu Higher Education Institutions. The first author acknowledges the assisted one for his hard work in preparing this package in R.
 
 ## Examples
 
@@ -191,7 +210,7 @@ for (i in 1:6) {
     c[length(a) + 1] = nn[i]^2
 
     print(-eff.ini.maxeig.tri(a, b, c, xi = 1)$z)
-    print(-eff.ini.maxeig.tri(a, b, c, xi = 7/8, improved = T)$z)
+    print(-eff.ini.maxeig.tri(a, b, c, xi = 7/8)$z)
 }
 ```
 ```{r, eval = TRUE, echo=FALSE, results='hold', tidy=TRUE}
@@ -208,6 +227,27 @@ print(c(0.316529, 0.304942, 0.304918))
 print(c(0.275762, 0.302660, 0.302561))
 print(c(0.314370, 0.302586, 0.302561))
 ```
+###### With safe improvement
+```{r, eval = FALSE, echo=TRUE, results='hold', tidy=TRUE}
+nn = c(8, 100, 500, 1000, 5000, 7500, 10^4)
+for (i in 1:7) {
+    a = c(1:(nn[i] - 1))^2
+    b = c(1:(nn[i] - 1))^2
+    c = rep(0, length(a) + 1)
+    c[length(a) + 1] = nn[i]^2
+
+    print(-eff.ini.maxeig.shift.inv.tri(a, b, c, xi = 1)$z)
+}
+```
+```{r, eval = TRUE, echo=FALSE, results='hold', tidy=TRUE}
+print(c(0.485985, 0.524150, 0.525267, 0.525268))
+print(c(0.348549, 0.374848, 0.376378, 0.376383))
+print(c(0.310195, 0.336860, 0.338320, 0.338329))
+print(c(0.299089, 0.325735, 0.327229, 0.327240))
+print(c(0.281156, 0.306874, 0.308514, 0.308529))
+print(c(0.277865, 0.303213, 0.304903, 0.304918))
+print(c(0.275762, 0.300821, 0.302545, 0.302561))
+```
 
 #### The maximal eigenvalue of A Example 8 (Due to L.K.Hua)
 ```{r, echo=TRUE, results='hold', tidy=TRUE}
@@ -215,7 +255,12 @@ a = 14/100
 b = 40/100
 c = c(-25/100 - 40/100, -12/100 - 14/100)
 eff.ini.maxeig.tri(a, b, c, xi = 1)$z
-eff.ini.maxeig.tri(a, b, c, xi = 7/8, improved = T)$z
+eff.ini.maxeig.tri(a, b, c, xi = 7/8)$z
+```
+###### With safe improvement
+```{r, echo=TRUE, results='hold', tidy=TRUE}
+eff.ini.maxeig.shift.inv.tri(a, b, c, xi = 1)$z
+eff.ini.maxeig.shift.inv.tri(a, b, c, xi = 7/8)$z
 ```
 
 #### Example 10 (tridiagonal case)
@@ -225,8 +270,27 @@ b = c(11/sqrt(10), 20 * sqrt(130)/143)
 c = c(-1 - 11/sqrt(10), -25/11 - sqrt(10) - 20 * sqrt(130)/143, -8/11 -
     sqrt(130)/11)
 eff.ini.maxeig.tri(a, b, c, xi = 1, digit.thresh = 5)$z
-eff.ini.maxeig.tri(a, b, c, xi = 7/8, improved = T, digit.thresh = 5)$z
+eff.ini.maxeig.tri(a, b, c, xi = 7/8, digit.thresh = 5)$z
 ```
+###### With safe improvement
+```{r, echo=TRUE, results='hold', tidy=TRUE}
+eff.ini.maxeig.shift.inv.tri(a, b, c, xi = 1, digit.thresh = 5)$z
+eff.ini.maxeig.shift.inv.tri(a, b, c, xi = 7/8, digit.thresh = 5)$z
+```
+
+#### Example A3 in [Chen (2017)](http://math0.bnu.edu.cn/~chenmf/)
+```{r, echo=TRUE, results='hold', tidy=TRUE}
+a = c(0.5142, 0.2115, 0.8442, 0.2347, 0.9837)
+b = c(0.9962, 0.1111, 0.1405, 0.7595, 0.0781)
+c = c(-2.334-0.9962, -2.6725-0.5142-0.1111, -2.263-0.2115-0.1405, -2.8457-0.8442-0.7595, -2.2257-0.2347-0.0781, -2.1582-0.9837)
+eff.ini.maxeig.tri(a, b, c, xi = 1)$z
+```
+###### With safe improvement
+```{r, echo=TRUE, results='hold', tidy=TRUE}
+eff.ini.maxeig.shift.inv.tri(a, b, c, xi = 1)$z
+```
+From the above we can see that using the idea in the paper [Chen (2017)](http://math0.bnu.edu.cn/~chenmf/)...($z_{k}$=$\delta_{k}^{-1}$) may need one or two more steps than the [Chen (2016)](http://math0.bnu.edu.cn/~chenmf/) but [Chen (2017)](http://math0.bnu.edu.cn/~chenmf/)'s improvement is safe and never fall into pitfall, so we can use the new one instead of the old in 2016.
+
 
 ### Efficient initials. The general case.
 To get the maximal eigenpair for the general matrix $Q$, there are several choices of the initial vector $v_0$ and the initial $z_0$. In this subsection, we study several combinations of the choices.
@@ -304,7 +368,7 @@ c[1] = -diag(S)[1] - b[1]
 c[2:(N - 1)] = -diag(S)[2:(N - 1)] - b[2:(N - 1)] - a[1:(N - 2)]
 c[N] = -diag(S)[N] - a[N - 1]
 
-z0ini = eff.ini.maxeig.tri(a, b, c, xi = 7/8, improved = T)$z[1]
+z0ini = eff.ini.maxeig.tri(a, b, c, xi = 7/8)$z[1]
 z0ini
 eff.ini.maxeig.general(A, v0_tilde = rep(1, dim(A)[1]), z0 = "numeric",
     z0numeric = 28 - z0ini, digit.thresh = 4)$z
@@ -322,7 +386,7 @@ c[1] = -diag(S)[1] - b[1]
 c[2:(N - 1)] = -diag(S)[2:(N - 1)] - b[2:(N - 1)] - a[1:(N - 2)]
 c[N] = -diag(S)[N] - a[N - 1]
 
-z0ini = eff.ini.maxeig.tri(a, b, c, xi = 7/8, improved = T)$z[1]
+z0ini = eff.ini.maxeig.tri(a, b, c, xi = 7/8)$z[1]
 z0ini
 eff.ini.maxeig.general(A, v0_tilde = rep(1, dim(A)[1]), z0 = "numeric",
     z0numeric = 31 - z0ini, digit.thresh = 4)$z
@@ -336,16 +400,18 @@ a slight different combination was used there.
 ```{r, echo=TRUE, results='hold', tidy=TRUE}
 A = matrix(c(1, 1, 3, 2, 2, 2, 3, 1, 1), 3, 3)
 eff.ini.maxeig.general(A, z0 = "Auto", digit.thresh = 5)$z
-eff.ini.maxeig.general(A, improved = T, xi = 1, digit.thresh = 5)$z
-eff.ini.maxeig.general(A, improved = T, xi = 1/3, digit.thresh = 5)$z
+eff.ini.maxeig.general(A, xi = 1, digit.thresh = 5)$z
+eff.ini.maxeig.general(A, xi = 1/3, digit.thresh = 5)$z
+eff.ini.maxeig.general(A, xi = 0, digit.thresh = 5)$z
 ```
 
 ##### Example 19 (Same as Example 14)
 ```{r, echo=TRUE, results='hold', tidy=TRUE}
 A = t(matrix(seq(1, 16), 4, 4))
 eff.ini.maxeig.general(A, z0 = "Auto", digit.thresh = 4)$z
-eff.ini.maxeig.general(A, improved = T, xi = 1, digit.thresh = 4)$z
-eff.ini.maxeig.general(A, improved = T, xi = 1/3, digit.thresh = 4)$z
+eff.ini.maxeig.general(A, xi = 1, digit.thresh = 4)$z
+eff.ini.maxeig.general(A, xi = 1/3, digit.thresh = 4)$z
+eff.ini.maxeig.general(A, xi = 0, digit.thresh = 4)$z
 ```
 
 ##### Example 20 (Same as Example 15)
@@ -353,8 +419,9 @@ eff.ini.maxeig.general(A, improved = T, xi = 1/3, digit.thresh = 4)$z
 A = matrix(c(1, 3, 9, 5, 2, 14, 10, 6, 0, 11, 11, 7, 0, 0, 1, 8),
     4, 4)
 eff.ini.maxeig.general(A, z0 = "Auto", digit.thresh = 4)$z
-eff.ini.maxeig.general(A, improved = T, xi = 1, digit.thresh = 4)$z
-eff.ini.maxeig.general(A, improved = T, xi = 0.65, digit.thresh = 4)$z
+eff.ini.maxeig.general(A, xi = 1, digit.thresh = 4)$z
+eff.ini.maxeig.general(A, xi = 0.65, digit.thresh = 4)$z
+eff.ini.maxeig.general(A, xi = 0, digit.thresh = 4)$z
 ```
 
 ##### Example 21
@@ -396,7 +463,25 @@ for (i in 1:4) {
 }
 ```
 
-### The next to the maximal eigenpair. Tridiagonal matrix case.
+
+#### Example A3 in [Chen (2017)](http://math0.bnu.edu.cn/~chenmf/)
+```{r, echo=TRUE, results='hold', tidy=TRUE}
+a = c(0.5142, 0.2115, 0.8442, 0.2347, 0.9837)
+b = c(0.9962, 0.1111, 0.1405, 0.7595, 0.0781)
+c = c(-2.334-0.9962, -2.6725-0.5142-0.1111, -2.263-0.2115-0.1405, -2.8457-0.8442-0.7595, -2.2257-0.2347-0.0781, -2.1582-0.9837)
+
+N = length(a)
+A = tridiag(b, a, -c(b[1] + c[1], a[1:N - 1] + b[2:N] + c[2:N], a[N] + c[N + 
+        1]))
+eff.ini.maxeig.general(A, xi = 1, digit.thresh = 5)$z
+eff.ini.maxeig.general(A, xi = 0.18, digit.thresh = 5)$z
+eff.ini.maxeig.general(A, xi = 0, digit.thresh = 5)$z
+```
+From this example, we can see that when `xi=0`, it goes into pitfall. So we
+may choose `xi` does not equal to 0.
+
+### The next to the maximal eigenpair. 
+### Tridiagonal matrix case.
 #### Example 25
 ```{r, echo=TRUE, results='hold', tidy=TRUE}
 a = c(1:7)^2
@@ -417,7 +502,7 @@ eff.ini.seceig.tri(a, b, xi = 1, digit.thresh = 5)$z
 eff.ini.seceig.tri(a, b, xi = 2/5, digit.thresh = 5)$z
 ```
 
-### The next to the maximal eigenpair. General matrix case.
+### General matrix case.
 The results of two choices of the initial $z_0$ are presented in the following.
 
 #### Example 27
@@ -436,3 +521,8 @@ Q = matrix(c(-57, 135/59, 243/91, 351/287, 118/27, -52, 590/91, 118/41,
 eff.ini.seceig.general(Q, z0 = "Auto", digit.thresh = 4)$z
 eff.ini.seceig.general(Q, z0 = "fixed", digit.thresh = 4)$z
 ```
+
+# References
+[1] M. F. Chen. "Efficient initials for computing maximal eigenpair". In: _Frontiers of Mathematics in China_ 11.6 (2016), pp. 1379-1418.
+
+[2] M. F. Chen. "Global algorithms for maximal eigenpair". In: _Frontiers of Mathematics in China_ 12.5 (2017), pp. 1023-1043.

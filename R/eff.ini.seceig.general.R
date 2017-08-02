@@ -19,7 +19,7 @@ getzstart = function(Q, mu, x, r, N) {
 #'
 #' @return A list of eigenpair object are returned, with components \eqn{z}, \eqn{v} and \eqn{iter}.
 #' \item{z}{The approximating sequence of the maximal eigenvalue.}
-#' \item{v}{The approximating sequence of the corresponding eigenvector.}
+#' \item{v}{The approximating eigenfunction of the corresponding eigenvector.}
 #' \item{iter}{The number of iterations.}
 #' 
 #' @note The conservativity of matrix \eqn{Q=(q_{ij})} means that the sums of each row of
@@ -37,42 +37,39 @@ getzstart = function(Q, mu, x, r, N) {
 
 #' @export
 eff.ini.seceig.general = function(Q, z0 = NULL, c1 = 1000, digit.thresh = 6) {
-    if (sum(rowSums(Q) > 1e-10) > 0)
+    if (sum(rowSums(Q) > 1e-10) > 0) 
         stop("Input matrix Q should be a conservative matrix!")
-
+    
     N = dim(Q)[1]
-
+    
     Q1 = Q
     Q1[N, N] = c1 * Q[N, N]
     q1 = 1/diag(Q1)
     P = diag(q1, N) %*% Q1 + diag(1, N)
-
+    
     if (z0 == "fixed") {
-        lambda0Q1 = -eff.ini.maxeig.general(Q1, digit.thresh = digit.thresh,
-            improved = T, xi = 1)$z
+        lambda0Q1 = -eff.ini.maxeig.general(Q1, digit.thresh = digit.thresh, xi = 1)$z
     }
-
+    
     x = rep(NA, N)
     x[1] = 1
     x[2:N] = solve(diag(1, N - 1) - P[-1, -1], P[2:N, 1])
-
+    
     mu = rep(1, N)
     mu[2:N] = solve(t(Q)[-N, -1], -t(Q)[1:(N - 1), 1])
-
+    
     z0func = function(r) {
         return(getzstart(Q, mu, x, r, N))
     }
-    ropt = optim(0.9, z0func, method = c("L-BFGS-B"), lower = 0,
-        upper = 1)$par
-
+    ropt = optim(0.9, z0func, method = c("L-BFGS-B"), lower = 0, upper = 1)$par
+    
     v0_tilde = c(ropt, sqrt(1 - x[2:N]))
     v0_bar = v0_tilde - sum(mu * v0_tilde)/sum(mu)
     v0 = v0_bar/sqrt(sum(v0_bar^2 * mu))
-
-    zstart = switch(z0, fixed = lambda0Q1[length(lambda0Q1)], Auto = sum(v0_bar *
+    
+    zstart = switch(z0, fixed = lambda0Q1[length(lambda0Q1)], Auto = sum(v0_bar * 
         (-Q %*% v0_tilde) * mu)/sum(v0_bar^2 * mu))
-    ray = ray.quot(Q = Q, mu = mu, v0_tilde = v0_bar, zstart = zstart,
-        digit.thresh = digit.thresh)
-
+    ray = ray.quot.seceig.general(Q = Q, mu = mu, v0_tilde = v0_bar, zstart = zstart, digit.thresh = digit.thresh)
+    
     return(list(z = unlist(ray$z), v = ray$v, iter = ray$iter))
 }

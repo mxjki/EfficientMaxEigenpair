@@ -5,6 +5,7 @@
 #' @param lower The lower diagonal vector.
 #' @param main The main diagonal vector.
 #' @return A tridiagonal matrix is returned.
+#' 
 #' @examples a = c(1:7)^2
 #' b = c(1:7)^2
 #' c = -c(1:8)^2
